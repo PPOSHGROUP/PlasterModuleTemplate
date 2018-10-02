@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<plasterManifest
+        xmlns="http://www.microsoft.com/schemas/PowerShell/Plaster/v1" schemaVersion="1.0">
+        <metadata>
+                <name>ModuleTemplate</name>
+                <id>42fb2862-4c5f-49fe-aff1-c64571e92533</id>
+                <version>0.0.1</version>
+                <title>PPoSh Custom Module Template</title>
+                <description>Plaster template to create a module</description>
+                <author>Mateusz Czerniawski</author>
+                <tags></tags>
+        </metadata>
+        <parameters>
+                <parameter name='ModuleAuthor' type = 'user-fullname' prompt='Author' />
+                <parameter name='ModuleName' type = 'text' prompt='Name of your module' />
+                <parameter name='ModuleVersion' type = 'text' prompt='Version Number' default='0.0.1' />
+                <parameter name='ModuleDesc' type = 'text' prompt='Brief Description of your module' />
+                <parameter name='FunctionFolders' type = 'multichoice' prompt='Please select folders to include' default='0,1,2'>
+                        <choice label='&amp;Public' 
+                                value='Public' 
+                                help='Adds a public folder to module root'/>
+                        <choice label='&amp;Private' 
+                                value='Private' 
+                                help='Adds a private folder to module root'/>
+                        <choice label='&amp;Configuration' 
+                                value='Configuration' 
+                                help='Adds a binaries folder to module root'/>
+                </parameter>
+                <parameter name='GIT' type = 'choice' prompt='Add Git Support' default='0'>
+                        <choice label='&amp;Yes' 
+                                value='Yes' 
+                                help='Adds support for GIT'/>
+                        <choice label='&amp;No' 
+                                value='No' 
+                                help='Does not add support for GIT'/>
+                </parameter>
+                <parameter name='License' type='choice' default='2' store='text' prompt='Select a license for your module'>
+                        <choice label='&amp;Apache'
+                                value="Apache"
+                                 help="Adds an Apache license file."/>
+                        <choice label='&amp;MIT'
+                                value="MIT"
+                                help="Adds an MIT license file."/>
+                        <choice label='&amp;None'
+                                value="None"
+                                help="No license specified."/>
+                </parameter>
+                <parameter name='Pester' type = 'choice' prompt='Include Pester Tests?' default='0'>
+                        <choice label='&amp;Yes' 
+                                value='Yes' 
+                                help='Adds a tests folder'/>
+                        <choice label='&amp;No' 
+                                value='No' 
+                                help='Does not add a tests folder'/>
+                </parameter>
+                <parameter name='PPoShBuild' type = 'choice' prompt='Include PPoShBuild Support?' default='0'>
+                        <choice label='&amp;Yes' 
+                                value='Yes' 
+                                help='Includes PPoSh Build files'/>
+                        <choice label='&amp;No' 
+                                value='No' 
+                                help='Does not include PPoSh Build files'/>
+                </parameter>
+                <parameter name='Req_PPoShTools' type = 'choice' prompt='Include PPoShTools requirement file?' default='0'>
+                        <choice label='&amp;Yes' 
+                                value='Yes' 
+                                help='Includes PPoShTools requirement file'/>
+                        <choice label='&amp;No' 
+                                value='No' 
+                                help='Does not include PPoShTools requirement file'/>
+                </parameter>
+                <parameter name='VSCode' type = 'choice' prompt='Add VSCode support?' default='0'>
+                        <choice label='&amp;Yes' 
+                                value='Yes' 
+                                help='Adds VSCdode settings file'/>
+                        <choice label='&amp;No' 
+                                value='No' 
+                                help='Does not add VSCdode settings file'/>
+                </parameter>
+                <parameter name='Docs' type = 'choice' prompt='Add Docs folder?' default='0'>
+                        <choice label='&amp;Yes' 
+                                value='Yes' 
+                                help='Adds Docs folder'/>
+                        <choice label='&amp;No' 
+                                value='No' 
+                                help='Does not add Docs folder'/>
+                </parameter>
+        </parameters>
+        <content>
+                <message>Setting up your project</message>
+                <newModuleManifest destination='${PLASTER_PARAM_ModuleName}\${PLASTER_PARAM_ModuleName}.psd1' moduleVersion='$PLASTER_PARAM_ModuleVersion' rootModule='${PLASTER_PARAM_ModuleName}.psm1' author='$PLASTER_PARAM_ModuleAuthor' description='$PLASTER_PARAM_ModuleDesc'/>
+                <templateFile source='template.psm1' 
+                        destination='${PLASTER_PARAM_ModuleName}\${PLASTER_PARAM_ModuleName}.psm1'/>
+                <message>Creating you folders for module: </message>
+                <file source='' 
+                        destination='${PLASTER_PARAM_ModuleName}\Public\' 
+                        condition='$PLASTER_PARAM_FunctionFolders -contains "Public"'/>
+                <file source='' 
+                        destination='${PLASTER_PARAM_ModuleName}\Private\' 
+                        condition='$PLASTER_PARAM_FunctionFolders -contains "Private"'/>
+                <file source='' 
+                        destination='${PLASTER_PARAM_ModuleName}\Configuration\' 
+                        condition='$PLASTER_PARAM_FunctionFolders -contains "Configuration"'/>
+                <message condition='$PLASTER_PARAM_GIT -eq "Yes"'>Setting up support for GIT</message>
+                <file source='_gitignore' 
+                        destination='.gitignore' 
+                        condition='$PLASTER_PARAM_GIT -eq "Yes"'/>
+                <templateFile source='README.md' 
+                        destination='README.md' 
+                        condition='$PLASTER_PARAM_GIT -eq "Yes"'/>
+                <templateFile source='LicenseFiles\ApacheLicense.txt'
+                      destination='LICENSE.txt'
+                      condition="$PLASTER_PARAM_License -eq 'Apache'"
+                      encoding="UTF8-NoBOM"/>
+                <templateFile source='LicenseFiles\MITLicense.txt'
+                      destination='LICENSE.txt'
+                      condition="$PLASTER_PARAM_License -eq 'MIT'"/>
+                <message condition='$PLASTER_PARAM_Pester -eq "Yes"'>Setting up support for Pester</message>
+                <requireModule name="Pester" minimumVersion="3.4.0" condition='$PLASTER_PARAM_Pester -eq "Yes"'/>
+                <file source='' 
+                        destination='Tests\' 
+                        condition='$PLASTER_PARAM_Pester -eq "Yes"'/>
+                <file source='basicModule.Tests.ps1' 
+                        destination='Tests\${PLASTER_PARAM_ModuleName}.tests.ps1' 
+                        condition='$PLASTER_PARAM_Pester -eq "Yes"'/>
+                <message condition='$PLASTER_PARAM_PPoShBuild -eq "Yes"'>Setting up support for PPoShBuild</message>
+                <file source='' 
+                        destination='build\' 
+                        condition='$PLASTER_PARAM_PPoShBuild -eq "Yes"'/>
+                <templateFile source='build\build.ps1' 
+                        destination='build\build.ps1' 
+                        condition='$PLASTER_PARAM_PPoShBuild -eq "Yes"'/>
+                <templateFile source='build\build.depend.psd1' 
+                        destination='build\build.depend.psd1' 
+                        condition='$PLASTER_PARAM_PPoShBuild -eq "Yes"'/>
+                <templateFile source='build\appveyor.yml'
+                        destination='build\appveyor.yml' 
+                        condition='$PLASTER_PARAM_PPoShBuild -eq "Yes"'/>
+                <templateFile source='build\PPoShScriptingStyle.psd1' 
+                        destination='build\PPoShScriptingStyle.psd1' 
+                        condition='$PLASTER_PARAM_PPoShBuild -eq "Yes"'/>
+                <templateFile source='build\psake.ps1' 
+                        destination='build\psake.ps1' 
+                        condition='$PLASTER_PARAM_PPoShBuild -eq "Yes"'/>
+                <message condition='$PLASTER_PARAM_Req_PPoShTools -eq "Yes"'>Setting up Requirements.psd1 file for PPoShTools</message>
+                <templateFile source='requirements.psd1' 
+                        destination='requirements.psd1' 
+                        condition='$PLASTER_PARAM_Req_PPoShTools -eq "Yes"'/>
+                <message condition='$PLASTER_PARAM_VSCode -eq "Yes"'>Setting up support for VSCode</message>
+                <templateFile source='vscode\settings.json' 
+                        destination='.vscode\settings.json' 
+                        condition='$PLASTER_PARAM_VSCode -eq "Yes"'/>
+                <templateFile source='vscode\launch.json' 
+                        destination='.vscode\launch.json' 
+                        condition='$PLASTER_PARAM_VSCode -eq "Yes"'/>
+                <message condition='$PLASTER_PARAM_Docs -eq "Yes"'>Setting up Docs folder</message>
+                <templateFile source='docs\Quick-Start-Installation-and-Example.md' 
+                        destination='docs\Quick-Start-Installation-and-Example.md' 
+                        condition='$PLASTER_PARAM_Docs -eq "Yes"'/>
+                <templateFile source='docs\New-Module-Create.md' 
+                        destination='${PLASTER_PARAM_ModuleName}\Docs\New-Module-Create.md' 
+                        condition='$PLASTER_PARAM_Docs -eq "Yes"'/>
+        </content>
+</plasterManifest>
